@@ -1,0 +1,18 @@
+<button class="icon-btn menu" type="button" aria-label="Open navigation" (click)="menuClicked.emit()">
+  <app-icon name="menu" />
+</button>
+
+<label class="search">
+  <app-icon name="search" />
+  <input type="search" placeholder="Search" aria-label="Search" />
+</label>
+
+<div class="actions">
+  <button class="icon-btn" type="button" aria-label="Notifications"><app-icon name="bell" /></button>
+  <button class="icon-btn" type="button" aria-label="Messages"><app-icon name="mail" /></button>
+  @if (user(); as u) {
+    <a routerLink="/my-profile" aria-label="My profile">
+      <app-avatar [name]="u.firstName + ' ' + u.lastName" [size]="34" />
+    </a>
+  }
+</div>

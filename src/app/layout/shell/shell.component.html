@@ -1,0 +1,12 @@
+<app-sidebar class="sidebar" [class.open]="navOpen()" [user]="user()" (navigated)="navOpen.set(false)" />
+
+@if (navOpen()) {
+  <button class="scrim" type="button" aria-label="Close navigation" (click)="navOpen.set(false)"></button>
+}
+
+<div class="content">
+  <app-topbar [user]="user()" (menuClicked)="navOpen.set(true)" />
+  <main>
+    <router-outlet />
+  </main>
+</div>

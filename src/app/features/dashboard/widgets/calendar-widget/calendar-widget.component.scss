@@ -1,0 +1,65 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  --icon-size: 14px;
+
+  button {
+    display: inline-flex;
+    padding: 4px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--page);
+    }
+  }
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+  text-align: center;
+}
+
+.weekday {
+  padding: 4px 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.day {
+  width: 100%;
+  max-width: 34px;
+  margin: 0 auto;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 30px;
+
+  &.outside {
+    color: #a0a3b5;
+  }
+
+  &.event {
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  &.today {
+    background: var(--primary);
+    color: #fff;
+    font-weight: 600;
+  }
+}

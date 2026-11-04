@@ -1,0 +1,52 @@
+:host {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.content {
+  min-width: 0;
+}
+
+main {
+  padding: 20px;
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  border: 0;
+  background: rgb(0 0 0 / 45%);
+}
+
+@media (max-width: 900px) {
+  :host {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    z-index: 20;
+    width: 230px;
+    visibility: hidden;
+    transform: translateX(-100%);
+    transition: transform 0.2s, visibility 0.2s;
+
+    &.open {
+      visibility: visible;
+      transform: none;
+    }
+  }
+
+  main {
+    padding: 16px;
+  }
+}

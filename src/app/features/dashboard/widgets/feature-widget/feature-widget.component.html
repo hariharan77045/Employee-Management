@@ -1,0 +1,40 @@
+<div class="card feature">
+  <svg class="hero" viewBox="0 0 600 420" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#2d5fa8" />
+        <stop offset="0.65" stop-color="#8fc4e8" />
+        <stop offset="1" stop-color="#fbe3b5" />
+      </linearGradient>
+    </defs>
+    <rect width="600" height="420" fill="url(#sky)" />
+    <circle cx="430" cy="235" r="46" fill="#fff3c9" />
+    <path d="M0 300 120 210l90 70 110-110 130 120 150-90v220H0z" fill="#4d7fb0" />
+    <path d="M0 350l150-70 130 60 150-80 170 80v80H0z" fill="#27507f" />
+    <path d="M0 420v-40l210-50 180 30 210-30v90z" fill="#14294d" />
+    <g fill="none" stroke="#0c1a33" stroke-width="10" stroke-linecap="round">
+      <path d="M300 340v-60M300 295l-30-50M300 295l30-50M300 340l-16 26M300 340l16 26" />
+    </g>
+    <circle cx="300" cy="262" r="12" fill="#0c1a33" />
+  </svg>
+
+  <section class="announcements">
+    <div class="card-head">
+      <h2>Latest announcements</h2>
+      <a class="link" routerLink="/news-events">View all</a>
+    </div>
+
+    <ul class="rows">
+      @for (item of announcements(); track item.id) {
+        <li>
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.summary }}</p>
+          <div class="meta">
+            <small>{{ item.postedAt | date: 'MMM d, y, h:mm a' }}</small>
+            <app-avatar [name]="item.author" [size]="26" />
+          </div>
+        </li>
+      }
+    </ul>
+  </section>
+</div>

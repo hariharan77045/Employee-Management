@@ -1,0 +1,53 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas:
+    'greeting feature feature'
+    'learning services calendar'
+    'leave contacts events';
+  gap: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.greeting { grid-area: greeting; }
+.feature { grid-area: feature; }
+.learning { grid-area: learning; }
+.services { grid-area: services; }
+.calendar { grid-area: calendar; }
+.leave { grid-area: leave; }
+.contacts { grid-area: contacts; }
+.events { grid-area: events; }
+
+.loading {
+  padding: 48px 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 1180px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'feature feature'
+      'greeting calendar'
+      'learning services'
+      'leave contacts'
+      'events events';
+  }
+}
+
+@media (max-width: 680px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'greeting'
+      'feature'
+      'learning'
+      'services'
+      'calendar'
+      'leave'
+      'contacts'
+      'events';
+  }
+}

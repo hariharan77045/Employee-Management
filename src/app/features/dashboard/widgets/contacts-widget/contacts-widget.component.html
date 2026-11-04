@@ -1,0 +1,26 @@
+<section class="card card-pad">
+  <div class="card-head">
+    <h2>Quick contacts</h2>
+    <label class="search">
+      <app-icon name="search" />
+      <input #search type="search" placeholder="Search" aria-label="Search contacts" (input)="query.set(search.value)" />
+    </label>
+  </div>
+
+  <ul class="rows">
+    @for (contact of filtered(); track contact.id) {
+      <li class="row">
+        <app-avatar [name]="contact.name" />
+        <span class="row-text">
+          <strong>{{ contact.name }}</strong>
+          <small>{{ contact.email }}</small>
+        </span>
+        <a class="tile mail" [href]="'mailto:' + contact.email" [attr.aria-label]="'Email ' + contact.name">
+          <app-icon name="mail" />
+        </a>
+      </li>
+    } @empty {
+      <li class="row"><small class="none">No contacts found.</small></li>
+    }
+  </ul>
+</section>

@@ -1,0 +1,18 @@
+<section class="welcome">
+  <p class="when">{{ now | date: 'EEEE' }} &nbsp;|&nbsp; {{ now | date: 'h:mm a' }}</p>
+  <p class="temp" [attr.aria-label]="weather().temperatureC + ' degrees, ' + weather().condition">
+    {{ weather().temperatureC }}°
+  </p>
+  <h1>{{ greeting }}{{ firstName() ? ', ' + firstName() : '' }}!</h1>
+
+  <svg viewBox="0 0 120 90" aria-hidden="true">
+    <circle cx="78" cy="30" r="20" fill="#ffd25e" />
+    <path d="M78 2v6M106 30h-6M98 10l-4 4M58 10l4 4" stroke="#ffd25e" stroke-width="3" stroke-linecap="round" />
+    <path d="M28 82a18 18 0 0 1-2-36 25 25 0 0 1 48-5 21 21 0 0 1 16 41z" fill="#fff" />
+  </svg>
+</section>
+
+<section class="card card-pad tip">
+  <h2>Tip of the day</h2>
+  <p><span aria-hidden="true">☕</span> {{ tip() }}</p>
+</section>

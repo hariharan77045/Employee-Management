@@ -1,0 +1,21 @@
+<section class="card card-pad">
+  <div class="card-head">
+    <h2>Calendar</h2>
+    <div class="nav">
+      <button type="button" aria-label="Previous month" (click)="changeMonth(-1)"><app-icon name="chevron-left" /></button>
+      <span aria-live="polite">{{ month() | date: 'MMMM y' }}</span>
+      <button type="button" aria-label="Next month" (click)="changeMonth(1)"><app-icon name="chevron-right" /></button>
+    </div>
+  </div>
+
+  <div class="days">
+    @for (weekday of weekdays; track weekday) {
+      <span class="weekday">{{ weekday }}</span>
+    }
+    @for (day of days(); track day.key) {
+      <span class="day" [class.outside]="!day.inMonth" [class.today]="day.isToday" [class.event]="day.hasEvent">
+        {{ day.day }}
+      </span>
+    }
+  </div>
+</section>

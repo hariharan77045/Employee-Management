@@ -1,0 +1,14 @@
+@if (data(); as d) {
+  <div class="grid">
+    <app-greeting-widget class="greeting" [firstName]="user()?.firstName ?? ''" [weather]="d.weather" [tip]="d.tip" />
+    <app-feature-widget class="feature" [announcements]="d.announcements" />
+    <app-learning-widget class="learning" [courses]="d.courses" />
+    <app-services-widget class="services" [services]="d.services" />
+    <app-calendar-widget class="calendar" [eventDates]="eventDates()" />
+    <app-leave-widget class="leave" [leaves]="d.leaves" />
+    <app-contacts-widget class="contacts" [contacts]="d.contacts" />
+    <app-events-widget class="events" [events]="d.events" />
+  </div>
+} @else {
+  <p class="loading" role="status">Loading dashboard…</p>
+}

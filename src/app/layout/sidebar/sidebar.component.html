@@ -1,0 +1,20 @@
+<a class="brand" routerLink="/home" (click)="navigated.emit()">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12 21 3l-5 18-4-7z" fill="#5aa9f0" /></svg>
+  <span>EmployeeHub</span>
+</a>
+
+@if (user(); as u) {
+  <a class="profile" routerLink="/my-profile" (click)="navigated.emit()">
+    <app-avatar [name]="u.firstName + ' ' + u.lastName" [size]="64" />
+    <span class="name">{{ u.firstName }} {{ u.lastName }}</span>
+  </a>
+}
+
+<nav aria-label="Main">
+  @for (item of navItems; track item.path) {
+    <a [routerLink]="'/' + item.path" routerLinkActive="active" (click)="navigated.emit()">
+      <app-icon [name]="item.icon" />
+      <span>{{ item.label }}</span>
+    </a>
+  }
+</nav>

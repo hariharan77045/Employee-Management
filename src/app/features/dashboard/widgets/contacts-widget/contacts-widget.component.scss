@@ -1,0 +1,42 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 120px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  --icon-size: 14px;
+
+  input {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 12px;
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--primary);
+  }
+}
+
+.mail {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  --icon-size: 15px;
+}
+
+.none {
+  color: var(--muted);
+}
