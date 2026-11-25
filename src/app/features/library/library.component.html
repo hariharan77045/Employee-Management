@@ -1,0 +1,149 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>Library</h1>
+      <p>Borrow books, e-books, videos and courses. Up to 3 at a time, for 14 days.</p>
+    </div>
+    @if (canManage()) {
+      <button class="btn btn-primary" type="button" (click)="showForm.set(!showForm())">
+        <app-icon [name]="showForm() ? 'x' : 'plus'" /> {{ showForm() ? 'Cancel' : 'Add item' }}
+      </button>
+    }
+  </header>
+
+  @if (error(); as message) {
+    <p class="alert" role="alert"><app-icon name="alert" /> {{ message }}</p>
+  }
+  @if (notice(); as message) {
+    <p class="alert success" role="status"><app-icon name="check" /> {{ message }}</p>
+  }
+
+  @if (showForm() && canManage()) {
+    <section class="card card-pad compose">
+      @if (formError(); as message) {
+        <p class="alert" role="alert"><app-icon name="alert" /> {{ message }}</p>
+      }
+      <form [formGroup]="form" (ngSubmit)="addItem()" novalidate>
+        <div class="form-grid">
+          <label class="field" [class.invalid]="form.controls.title.touched && form.controls.title.invalid">
+            <span>Title</span>
+            <input formControlName="title" maxlength="200" />
+            @if (form.controls.title.touched && form.controls.title.invalid) { <small class="error">Required</small> }
+          </label>
+          <label class="field">
+            <span>Author</span>
+            <input formControlName="author" maxlength="150" />
+          </label>
+          <label class="field" [class.invalid]="form.controls.category.touched && form.controls.category.invalid">
+            <span>Category</span>
+            <input formControlName="category" maxlength="50" list="library-categories" />
+            <datalist id="library-categories">
+              @for (c of categories(); track c) { <option [value]="c"></option> }
+            </datalist>
+            @if (form.controls.category.touched && form.controls.category.invalid) { <small class="error">Required</small> }
+          </label>
+          <label class="field">
+            <span>Format</span>
+            <select formControlName="format">
+              @for (f of formats; track f) { <option [value]="f">{{ labels[f] }}</option> }
+            </select>
+          </label>
+          <label class="field" [class.invalid]="form.controls.totalCopies.touched && form.controls.totalCopies.invalid">
+            <span>Copies</span>
+            <input type="number" min="0" max="500" formControlName="totalCopies" />
+            @if (form.controls.totalCopies.touched && form.controls.totalCopies.invalid) { <small class="error">0 to 500</small> }
+          </label>
+          <label class="field full">
+            <span>Description</span>
+            <textarea rows="2" formControlName="description" maxlength="2000"></textarea>
+          </label>
+        </div>
+        <button class="btn btn-primary" type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Add to catalogue' }}</button>
+      </form>
+    </section>
+  }
+
+  <div class="layout">
+    <section>
+      <div class="card card-pad filters">
+        <input type="search" placeholder="Search by title or author" aria-label="Search the library"
+               [value]="query()" (input)="query.set($any($event.target).value)" />
+        <select aria-label="Category" [value]="category()" (change)="category.set($any($event.target).value)">
+          <option value="">All categories</option>
+          @for (c of categories(); track c) { <option [value]="c">{{ c }}</option> }
+        </select>
+        <label class="check">
+          <input type="checkbox" [checked]="availableOnly()" (change)="availableOnly.set($any($event.target).checked)" />
+          Available now
+        </label>
+      </div>
+
+      @if (items()) {
+        <ul class="catalogue">
+          @for (i of visible(); track i.id) {
+            <li class="card item">
+              <div class="item-head">
+                <span class="badge">{{ labels[i.format] }}</span>
+                <small class="muted">{{ i.category }}</small>
+              </div>
+              <strong>{{ i.title }}</strong>
+              @if (i.author) { <small class="muted">{{ i.author }}</small> }
+              @if (i.description) { <p>{{ i.description }}</p> }
+              <div class="item-foot">
+                <small [class.none]="i.available === 0">{{ i.available }} of {{ i.totalCopies }} available</small>
+                @if (i.borrowedByMe) {
+                  <span class="badge Approved">You have this</span>
+                } @else {
+                  <button class="btn btn-sm btn-primary" type="button"
+                          [disabled]="i.available === 0 || busy() === 'item-' + i.id" (click)="borrow(i)">
+                    {{ busy() === 'item-' + i.id ? 'Borrowing…' : 'Borrow' }}
+                  </button>
+                }
+              </div>
+            </li>
+          } @empty {
+            <li class="empty-state">Nothing matches your search.</li>
+          }
+        </ul>
+      } @else if (!error()) {
+        <p class="empty-state" role="status">Loading the catalogue…</p>
+      }
+    </section>
+
+    <aside class="card card-pad loans" aria-labelledby="loans-title">
+      <h2 id="loans-title">My loans</h2>
+      @if (loans()) {
+        <ul class="rows">
+          @for (l of activeLoans(); track l.id) {
+            <li class="loan">
+              <span class="row-text">
+                <strong>{{ l.title }}</strong>
+                <small [class.late]="l.overdue">
+                  {{ l.overdue ? 'Overdue since' : 'Due' }} {{ l.dueOn | date: 'MMM d, y' }}
+                </small>
+              </span>
+              <button class="btn btn-sm" type="button" [disabled]="busy() === 'loan-' + l.id" (click)="giveBack(l)">
+                <app-icon name="undo" /> Return
+              </button>
+            </li>
+          } @empty {
+            <li class="muted">You have nothing borrowed.</li>
+          }
+        </ul>
+        @if (pastLoans().length) {
+          <h3>History</h3>
+          <ul class="rows history">
+            @for (l of pastLoans(); track l.id) {
+              <li>
+                <span class="row-text">
+                  <strong>{{ l.title }}</strong>
+                  <small>Returned {{ l.returnedOn | date: 'MMM d, y' }}</small>
+                </span>
+              </li>
+            }
+          </ul>
+        }
+      }
+    </aside>
+  </div>
+</div>

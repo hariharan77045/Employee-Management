@@ -1,0 +1,113 @@
+.card {
+  height: auto;
+}
+
+.compose {
+  margin-bottom: 16px;
+
+  form {
+    display: grid;
+    gap: 14px;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.search {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+h3 {
+  margin: 18px 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.faq {
+  border-bottom: 1px solid var(--border);
+
+  summary {
+    padding: 10px 0;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  p {
+    margin: 0 0 12px;
+    color: var(--muted);
+  }
+}
+
+.tickets {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: grid;
+    gap: 4px;
+    justify-items: start;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  p {
+    margin: 4px 0;
+  }
+}
+
+.ticket-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.resolution {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--primary-soft);
+}
+
+.queue-head {
+  margin-bottom: 4px;
+}
+
+.inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+
+  select {
+    width: auto;
+  }
+}
+
+.work {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+  width: 100%;
+  margin-top: 6px;
+
+  .grow {
+    flex: 1 1 240px;
+  }
+}

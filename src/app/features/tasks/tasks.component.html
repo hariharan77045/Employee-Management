@@ -1,0 +1,112 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>Tasks</h1>
+      <p>{{ summary().open }} open · {{ summary().overdue }} overdue · {{ summary().done }} done</p>
+    </div>
+    <button class="btn btn-primary" type="button" (click)="showForm.set(!showForm())">
+      <app-icon [name]="showForm() ? 'x' : 'plus'" /> {{ showForm() ? 'Cancel' : 'New task' }}
+    </button>
+  </header>
+
+  @if (canAssign()) {
+    <nav class="tabs" aria-label="Task views">
+      <a href="" [class.active]="view() === 'mine'" (click)="$event.preventDefault(); setView('mine')">My tasks</a>
+      <a href="" [class.active]="view() === 'assigned'" (click)="$event.preventDefault(); setView('assigned')">Assigned by me</a>
+    </nav>
+  }
+
+  @if (error(); as message) {
+    <p class="alert" role="alert"><app-icon name="alert" /> {{ message }}</p>
+  }
+
+  @if (showForm()) {
+    <section class="card card-pad compose">
+      @if (formError(); as message) {
+        <p class="alert" role="alert"><app-icon name="alert" /> {{ message }}</p>
+      }
+      <form [formGroup]="form" (ngSubmit)="create()" novalidate>
+        <div class="form-grid">
+          <label class="field full" [class.invalid]="form.controls.title.touched && form.controls.title.invalid">
+            <span>Title</span>
+            <input formControlName="title" maxlength="150" />
+            @if (form.controls.title.touched && form.controls.title.invalid) { <small class="error">Required</small> }
+          </label>
+          <label class="field full">
+            <span>Details</span>
+            <textarea rows="2" formControlName="description" maxlength="2000"></textarea>
+          </label>
+          <label class="field">
+            <span>Priority</span>
+            <select formControlName="priority">
+              @for (p of priorities; track p) { <option [value]="p">{{ labels[p] }}</option> }
+            </select>
+          </label>
+          <label class="field" [class.invalid]="form.controls.dueDate.errors?.['server']">
+            <span>Due date</span>
+            <input type="date" formControlName="dueDate" [min]="today" />
+            @if (form.controls.dueDate.errors?.['server']; as e) { <small class="error">{{ e }}</small> }
+          </label>
+          @if (canAssign()) {
+            <label class="field" [class.invalid]="form.controls.assigneeId.errors?.['server']">
+              <span>Assign to (employee ID)</span>
+              <input formControlName="assigneeId" inputmode="numeric" placeholder="Leave empty for yourself" />
+              @if (form.controls.assigneeId.errors?.['server']; as e) { <small class="error">{{ e }}</small> }
+            </label>
+          }
+        </div>
+        <button class="btn btn-primary" type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Add task' }}</button>
+      </form>
+    </section>
+  }
+
+  @if (tasks()) {
+    <div class="board">
+      @for (col of board(); track col.status) {
+        <section class="column" [attr.aria-label]="col.label">
+          <h2>{{ col.label }} <span class="count">{{ col.tasks.length }}</span></h2>
+          @for (t of col.tasks; track t.id) {
+            <article class="card task" [class.overdue]="t.overdue">
+              <div class="task-head">
+                <span class="badge prio-{{ t.priority }}">{{ labels[t.priority] }}</span>
+                @if (t.overdue) { <span class="badge Rejected">Overdue</span> }
+              </div>
+              <strong>{{ t.title }}</strong>
+              @if (t.description) { <p>{{ t.description }}</p> }
+              <small class="muted">
+                @if (t.dueDate) { Due {{ t.dueDate | date: 'MMM d' }} · }
+                @if (view() === 'assigned') {
+                  For {{ t.assigneeName }}
+                } @else if (t.createdById && t.createdById !== me()?.id) {
+                  From {{ t.createdByName }}
+                } @else {
+                  Personal task
+                }
+              </small>
+              <div class="task-actions">
+                <button class="icon-only" type="button" [disabled]="!canMove(t, -1) || busyId() === t.id"
+                        [attr.aria-label]="'Move ' + t.title + ' back'" (click)="move(t, -1)">
+                  <app-icon name="chevron-left" />
+                </button>
+                <button class="icon-only" type="button" [disabled]="!canMove(t, 1) || busyId() === t.id"
+                        [attr.aria-label]="'Move ' + t.title + ' forward'" (click)="move(t, 1)">
+                  <app-icon name="chevron-right" />
+                </button>
+                @if (canDelete(t)) {
+                  <button class="icon-only" type="button" [disabled]="busyId() === t.id"
+                          [attr.aria-label]="'Delete ' + t.title" (click)="remove(t)">
+                    <app-icon name="trash" />
+                  </button>
+                }
+              </div>
+            </article>
+          } @empty {
+            <p class="empty-state">Nothing here.</p>
+          }
+        </section>
+      }
+    </div>
+  } @else if (!error()) {
+    <p class="empty-state" role="status">Loading tasks…</p>
+  }
+</div>
