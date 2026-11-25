@@ -1,14 +1,56 @@
-@if (data(); as d) {
-  <div class="grid">
-    <app-greeting-widget class="greeting" [firstName]="user()?.firstName ?? ''" [weather]="d.weather" [tip]="d.tip" />
-    <app-feature-widget class="feature" [announcements]="d.announcements" />
-    <app-learning-widget class="learning" [courses]="d.courses" />
-    <app-services-widget class="services" [services]="d.services" />
-    <app-calendar-widget class="calendar" [eventDates]="eventDates()" />
-    <app-leave-widget class="leave" [leaves]="d.leaves" />
-    <app-contacts-widget class="contacts" [contacts]="d.contacts" />
-    <app-events-widget class="events" [events]="d.events" />
-  </div>
+@if (state(); as s) {
+  @if (s.data; as d) {
+    <ul class="stats" aria-label="Company at a glance">
+      <li>
+        <a routerLink="/directory">
+          <span class="tile"><app-icon name="users" /></span>
+          <span><strong>{{ d.stats.employees }}</strong><small>Employees</small></span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/directory">
+          <span class="tile"><app-icon name="building" /></span>
+          <span><strong>{{ d.stats.departments }}</strong><small>Departments</small></span>
+        </a>
+      </li>
+      <li>
+        <span class="stat">
+          <span class="tile"><app-icon name="briefcase" /></span>
+          <span><strong>{{ d.stats.projects }}</strong><small>Projects</small></span>
+        </span>
+      </li>
+      <li>
+        @if (canApprove()) {
+          <a routerLink="/my-services/approvals">
+            <span class="tile"><app-icon name="clock" /></span>
+            <span><strong>{{ d.stats.pendingLeaves }}</strong><small>Pending leave requests</small></span>
+          </a>
+        } @else {
+          <span class="stat">
+            <span class="tile"><app-icon name="clock" /></span>
+            <span><strong>{{ d.stats.onLeaveToday }}</strong><small>On leave today</small></span>
+          </span>
+        }
+      </li>
+    </ul>
+
+    <div class="grid">
+      <app-greeting-widget class="greeting" [firstName]="user()?.firstName ?? ''" [weather]="d.weather" [tip]="d.tip" />
+      <app-feature-widget class="feature" [announcements]="d.announcements" />
+      <app-learning-widget class="learning" [courses]="d.courses" />
+      <app-services-widget class="services" [services]="d.services" />
+      <app-calendar-widget class="calendar" [eventDates]="eventDates()" />
+      <app-leave-widget class="leave" [leaves]="d.leaves" />
+      <app-contacts-widget class="contacts" [contacts]="d.contacts" />
+      <app-events-widget class="events" [events]="d.events" />
+    </div>
+  } @else {
+    <section class="card card-pad failed" role="alert">
+      <h1>Couldn't load the dashboard</h1>
+      <p>{{ s.error }}</p>
+      <button class="btn btn-primary" type="button" (click)="reload()">Try again</button>
+    </section>
+  }
 } @else {
   <p class="loading" role="status">Loading dashboard…</p>
 }

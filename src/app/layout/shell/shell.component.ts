@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
 
-import { DashboardService } from '../../core/services/dashboard.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { TopbarComponent } from '../topbar/topbar.component';
 
@@ -15,6 +14,12 @@ import { TopbarComponent } from '../topbar/topbar.component';
   styleUrl: './shell.component.scss',
 })
 export class ShellComponent {
-  protected readonly user = toSignal(inject(DashboardService).getCurrentUser());
+  private readonly auth = inject(AuthService);
+
+  protected readonly user = this.auth.user;
   protected readonly navOpen = signal(false);
+
+  protected logout(): void {
+    this.auth.logout();
+  }
 }

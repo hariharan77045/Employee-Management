@@ -1,0 +1,203 @@
+<div class="page">
+  @if (!isMe()) {
+    <a class="link back" routerLink="/directory"><app-icon name="chevron-left" /> Back to directory</a>
+  }
+
+  @if (employee(); as e) {
+    <section class="card card-pad hero">
+      <app-avatar [name]="e.firstName + ' ' + e.lastName" [size]="72" />
+      <div class="who">
+        <h1>{{ e.firstName }} {{ e.lastName }}</h1>
+        <p class="muted">
+          {{ e.designationName ?? 'No designation' }}
+          @if (e.grade) { <span class="badge">{{ e.grade }}</span> }
+        </p>
+        <ul class="chips">
+          <li><app-icon name="building" /> {{ e.departmentName ?? '—' }}</li>
+          @if (e.departmentLocation) { <li><app-icon name="pin" /> {{ e.departmentLocation }}</li> }
+          <li><app-icon name="mail" /> <a [href]="'mailto:' + e.email">{{ e.email }}</a></li>
+          <li><app-icon name="phone" /> <a [href]="'tel:' + e.phone">{{ e.phone }}</a></li>
+        </ul>
+      </div>
+      @if (canManage()) {
+        <div class="actions">
+          <button class="btn" type="button" (click)="editing.set(true)"><app-icon name="edit" /> Edit</button>
+          @if (!isMe()) {
+            <button class="btn btn-danger" type="button" [disabled]="deleting()" (click)="remove(e)">
+              <app-icon name="trash" /> {{ deleting() ? 'Deleting…' : 'Delete' }}
+            </button>
+          }
+        </div>
+      }
+    </section>
+
+    @if (actionError(); as message) {
+      <p class="alert" role="alert"><app-icon name="alert" /> {{ message }}</p>
+    }
+    @if (e.restricted) {
+      <p class="alert info" role="note">
+        <app-icon name="shield" />
+        @if (canSeeWork()) {
+          Salary, date of birth, address and payslips are visible only to {{ e.firstName }} and HR.
+        } @else {
+          You're seeing {{ e.firstName }}'s work details only. Personal, leave and pay records are visible to
+          {{ e.firstName }}, their managers and HR.
+        }
+      </p>
+    }
+
+    <div class="grid">
+      <section class="card card-pad">
+        <div class="card-head"><h2>Personal details</h2></div>
+        <dl class="facts">
+          <dt>Employee ID</dt><dd>#{{ e.id }}</dd>
+          <dt>Gender</dt><dd>{{ e.gender ?? '—' }}</dd>
+          <dt>Joined</dt><dd>{{ e.hireDate | date: 'MMM d, y' }}</dd>
+          @if (!e.restricted) {
+            <dt>Date of birth</dt><dd>{{ e.dateOfBirth | date: 'MMM d, y' }}</dd>
+            <dt>Monthly salary</dt><dd>{{ e.salary | currency: 'INR' }}</dd>
+            <dt>Address</dt>
+            <dd>
+              @if (e.address; as a) {
+                {{ a.line }}<br />
+                {{ a.city }}{{ a.state ? ', ' + a.state : '' }} {{ a.pincode }}<br />
+                {{ a.country }}
+              } @else {
+                <span class="muted">Not on file</span>
+              }
+            </dd>
+          }
+        </dl>
+      </section>
+
+      @if (!e.restricted || canSeeWork()) {
+      <section class="card card-pad">
+        <div class="card-head">
+          <h2>Performance reviews</h2>
+          @if (averageRating(); as avg) { <span class="badge">Avg {{ avg.toFixed(1) }} / 5</span> }
+        </div>
+        <ul class="rows">
+          @for (r of e.reviews; track r.id) {
+            <li class="review">
+              <div><strong>{{ r.rating }} / 5</strong> <small class="muted">· {{ r.reviewDate | date: 'MMM d, y' }}</small></div>
+              <p>{{ r.comments }}</p>
+            </li>
+          } @empty {
+            <li class="muted">No reviews yet.</li>
+          }
+        </ul>
+      </section>
+      }
+
+      <section class="card card-pad wide">
+        <div class="card-head"><h2>Projects</h2></div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th scope="col">Project</th><th scope="col">Client</th><th scope="col">Duration</th><th scope="col">Assigned</th></tr>
+            </thead>
+            <tbody>
+              @for (p of e.projects; track p.projectId + p.assignedDate) {
+                <tr>
+                  <td><strong>{{ p.name }}</strong></td>
+                  <td>{{ p.clientName }}</td>
+                  <td class="nowrap">{{ p.startDate | date: 'MMM y' }} – {{ p.endDate | date: 'MMM y' }}</td>
+                  <td class="nowrap">{{ p.assignedDate | date: 'MMM d, y' }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="4" class="muted">Not assigned to any project.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      @if (!e.restricted || canSeeWork()) {
+      <section class="card card-pad wide">
+        <div class="card-head">
+          <h2>Leave history</h2>
+          @if (isMe()) { <a class="link" routerLink="/my-services">Apply for leave</a> }
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th scope="col">Type</th><th scope="col">Dates</th><th scope="col" class="num">Days</th><th scope="col">Reason</th><th scope="col">Status</th></tr>
+            </thead>
+            <tbody>
+              @for (l of e.leaves; track l.id) {
+                <tr>
+                  <td>{{ l.leaveType }}</td>
+                  <td class="nowrap">{{ l.fromDate | date: 'MMM d, y' }} – {{ l.toDate | date: 'MMM d, y' }}</td>
+                  <td class="num">{{ l.days }}</td>
+                  <td>{{ l.reason ?? '—' }}</td>
+                  <td><span [class]="badgeClass(l.status)">{{ l.status }}</span></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="muted">No leave requests.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+      }
+
+      @if (!e.restricted) {
+      <section class="card card-pad">
+        <div class="card-head"><h2>Payslips</h2></div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th scope="col">Month</th><th scope="col" class="num">Net pay</th></tr>
+            </thead>
+            <tbody>
+              @for (p of e.payslips; track p.id) {
+                <tr>
+                  <td>{{ p.month }}</td>
+                  <td class="num"><strong>{{ p.netSalary | currency: 'INR' }}</strong></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="2" class="muted">No payslips.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+      }
+
+      @if (!e.restricted || canSeeWork()) {
+      <section class="card card-pad">
+        <div class="card-head"><h2>Recent attendance</h2></div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th scope="col">Date</th><th scope="col">In / out</th><th scope="col">Status</th></tr>
+            </thead>
+            <tbody>
+              @for (a of e.attendance; track a.date) {
+                <tr>
+                  <td class="nowrap">{{ a.date | date: 'MMM d, y' }}</td>
+                  <td class="nowrap">{{ a.checkIn ? a.checkIn.slice(0, 5) : '—' }} – {{ a.checkOut ? a.checkOut.slice(0, 5) : '—' }}</td>
+                  <td><span [class]="badgeClass(a.status)">{{ a.status }}</span></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="3" class="muted">No attendance records.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+      }
+    </div>
+
+    @if (editing() && canManage()) {
+      <app-employee-form [employee]="e" (saved)="onSaved($event)" (closed)="editing.set(false)" />
+    }
+  } @else if (state().error) {
+    <section class="card card-pad">
+      <p class="alert" role="alert"><app-icon name="alert" /> {{ state().error }}</p>
+      <a class="link" routerLink="/directory">Back to directory</a>
+    </section>
+  } @else {
+    <p class="empty-state" role="status">Loading profile…</p>
+  }
+</div>

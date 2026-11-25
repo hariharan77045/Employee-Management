@@ -1,0 +1,216 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>My services</h1>
+      <p>Apply for time off, review your team's requests and see your payslips.</p>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="My services sections">
+    <a routerLink="/my-services" [class.active]="activeTab() === 'time-off'">Time off</a>
+    @if (canApprove()) {
+      <a routerLink="/my-services/approvals" [class.active]="activeTab() === 'approvals'">Leave approvals</a>
+    }
+    <a routerLink="/my-services/payslips" [class.active]="activeTab() === 'payslips'">Payslips</a>
+  </nav>
+
+  @switch (activeTab()) {
+    @case ('time-off') {
+      <div class="split">
+        <section class="card card-pad">
+          <div class="card-head"><h2>Apply for leave</h2></div>
+
+          @if (applySuccess(); as message) {
+            <p class="alert success" role="status"><app-icon name="check" /> {{ message }}</p>
+          }
+          @if (applyError(); as message) {
+            <p class="alert" role="alert"><app-icon name="alert" /> {{ message }}</p>
+          }
+
+          <form class="stack" [formGroup]="leaveForm" (ngSubmit)="applyLeave()" novalidate>
+            <label class="field" [class.invalid]="leaveForm.controls.leaveType.touched && leaveForm.controls.leaveType.invalid">
+              <span>Leave type</span>
+              <select formControlName="leaveType">
+                <option value="" disabled>Select…</option>
+                @for (type of leaveTypes(); track type) {
+                  <option [value]="type">{{ type }}</option>
+                }
+              </select>
+              @if (leaveForm.controls.leaveType.touched && leaveForm.controls.leaveType.invalid) {
+                <small class="error">Choose a leave type</small>
+              }
+            </label>
+
+            <div class="form-grid">
+              <label class="field">
+                <span>From</span>
+                <input type="date" formControlName="fromDate" [min]="today" />
+              </label>
+              <label class="field" [class.invalid]="leaveForm.hasError('range')">
+                <span>To</span>
+                <input type="date" formControlName="toDate" [min]="leaveForm.controls.fromDate.value || today" />
+                @if (leaveForm.hasError('range')) {
+                  <small class="error">Must be on or after the start date</small>
+                }
+              </label>
+            </div>
+
+            <label class="field">
+              <span>Reason <small class="muted">(optional)</small></span>
+              <textarea rows="3" formControlName="reason" maxlength="500"></textarea>
+            </label>
+
+            <button class="btn btn-primary" type="submit" [disabled]="applying()">
+              {{ applying() ? 'Submitting…' : 'Submit request' }}
+            </button>
+          </form>
+        </section>
+
+        <section class="card card-pad">
+          <div class="card-head"><h2>My requests</h2></div>
+
+          @if (myLeaves()) {
+            <ul class="summary">
+              <li><strong>{{ leaveSummary().pending }}</strong><small>Pending</small></li>
+              <li><strong>{{ leaveSummary().approved }}</strong><small>Approved</small></li>
+              <li><strong>{{ leaveSummary().rejected }}</strong><small>Rejected</small></li>
+              <li><strong>{{ leaveSummary().approvedDays }}</strong><small>Days taken</small></li>
+            </ul>
+          }
+
+          @if (myLeavesError(); as message) {
+            <p class="alert" role="alert"><app-icon name="alert" /> {{ message }}</p>
+          }
+
+          @if (myLeaves(); as rows) {
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr><th scope="col">Type</th><th scope="col">Dates</th><th scope="col" class="num">Days</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Actions</span></th></tr>
+                </thead>
+                <tbody>
+                  @for (l of rows; track l.id) {
+                    <tr>
+                      <td>{{ l.leaveType }}</td>
+                      <td class="nowrap">{{ l.fromDate | date: 'MMM d' }} – {{ l.toDate | date: 'MMM d, y' }}</td>
+                      <td class="num">{{ l.days }}</td>
+                      <td><span [class]="badgeClass(l.status)">{{ l.status }}</span></td>
+                      <td class="num">
+                        @if (l.status === 'Pending') {
+                          <button class="btn btn-sm" type="button" [disabled]="busyId() === l.id" (click)="withdraw(l)">Withdraw</button>
+                        }
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="5" class="empty-state">You haven't requested any leave yet.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else if (!myLeavesError()) {
+            <p class="empty-state" role="status">Loading…</p>
+          }
+        </section>
+      </div>
+    }
+
+    @case ('approvals') {
+      <section class="card card-pad">
+        <div class="card-head">
+          <h2>Leave requests</h2>
+          <div class="segmented" role="group" aria-label="Filter by status">
+            @for (status of ['Pending', 'Approved', 'Rejected']; track status) {
+              <button type="button" class="btn btn-sm" [class.btn-primary]="approvalFilter() === status"
+                      [attr.aria-pressed]="approvalFilter() === status" (click)="setApprovalFilter($any(status))">
+                {{ status }}
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (approvalsError(); as message) {
+          <p class="alert" role="alert"><app-icon name="alert" /> {{ message }}</p>
+        }
+
+        @if (approvals(); as rows) {
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">Employee</th><th scope="col">Type</th><th scope="col">Dates</th>
+                  <th scope="col" class="num">Days</th><th scope="col">Reason</th>
+                  <th scope="col">{{ approvalFilter() === 'Pending' ? 'Decision' : 'Status' }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (l of rows; track l.id) {
+                  <tr>
+                    <td>
+                      <a class="link" [routerLink]="['/directory', l.employeeId]">{{ l.employeeName }}</a>
+                      <br /><small class="muted">{{ l.jobTitle }}</small>
+                    </td>
+                    <td>{{ l.leaveType }}</td>
+                    <td class="nowrap">{{ l.fromDate | date: 'MMM d' }} – {{ l.toDate | date: 'MMM d, y' }}</td>
+                    <td class="num">{{ l.days }}</td>
+                    <td>{{ l.reason ?? '—' }}</td>
+                    <td class="nowrap">
+                      @if (l.status === 'Pending' && l.employeeId === currentUser()?.id) {
+                        <small class="muted">Your request</small>
+                      } @else if (l.status === 'Pending') {
+                        <button class="btn btn-sm" type="button" [disabled]="busyId() === l.id" (click)="decide(l, 'Approved')">
+                          <app-icon name="check" /> Approve
+                        </button>
+                        <button class="btn btn-sm" type="button" [disabled]="busyId() === l.id" (click)="decide(l, 'Rejected')">
+                          <app-icon name="x" /> Reject
+                        </button>
+                      } @else {
+                        <span [class]="badgeClass(l.status)">{{ l.status }}</span>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="6" class="empty-state">No {{ approvalFilter().toLowerCase() }} requests.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else if (!approvalsError()) {
+          <p class="empty-state" role="status">Loading…</p>
+        }
+      </section>
+    }
+
+    @case ('payslips') {
+      <section class="card card-pad">
+        <div class="card-head"><h2>Payslips</h2></div>
+        @if (payslips(); as rows) {
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">Month</th><th scope="col" class="num">Basic</th><th scope="col" class="num">Bonus</th>
+                  <th scope="col" class="num">Deductions</th><th scope="col" class="num">Net pay</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of rows; track p.id) {
+                  <tr>
+                    <td>{{ p.month }}</td>
+                    <td class="num">{{ p.basicSalary | currency: 'INR' }}</td>
+                    <td class="num">{{ p.bonus | currency: 'INR' }}</td>
+                    <td class="num">−{{ p.deduction | currency: 'INR' }}</td>
+                    <td class="num"><strong>{{ p.netSalary | currency: 'INR' }}</strong></td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="5" class="empty-state">No payslips yet.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="empty-state" role="status">Loading…</p>
+        }
+      </section>
+    }
+  }
+</div>

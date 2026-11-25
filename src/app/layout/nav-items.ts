@@ -1,7 +1,11 @@
+import { Role } from '../core/models/dashboard.models';
+
 export interface NavItem {
   label: string;
   path: string;
   icon: string;
+  /** Only these roles see the item; everyone when omitted. */
+  roles?: Role[];
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -14,4 +18,5 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Tasks', path: 'tasks', icon: 'tasks' },
   { label: 'Library', path: 'library', icon: 'book' },
   { label: 'Help & support', path: 'help', icon: 'help' },
+  { label: 'User accounts', path: 'admin/users', icon: 'shield', roles: ['ADMIN'] },
 ];

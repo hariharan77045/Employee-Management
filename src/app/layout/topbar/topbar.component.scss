@@ -75,3 +75,77 @@
     display: inline-flex;
   }
 }
+
+.user-menu {
+  position: relative;
+}
+
+.avatar-btn {
+  display: inline-flex;
+  margin-left: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+
+.menu-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 11;
+  display: grid;
+  width: 240px;
+  height: auto;
+  padding: 6px;
+
+  .who {
+    display: grid;
+    gap: 2px;
+    padding: 8px 10px 10px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+
+    small {
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    .badge {
+      justify-self: start;
+      margin-top: 4px;
+    }
+  }
+
+  a,
+  button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    margin: 0;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--page);
+    }
+  }
+}

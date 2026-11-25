@@ -1,0 +1,100 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>Directory</h1>
+      <p>{{ canManage() ? 'Find colleagues and manage employee records.' : 'Find colleagues and their contact details.' }}</p>
+    </div>
+    @if (canManage()) {
+      <button class="btn btn-primary" type="button" (click)="showForm.set(true)">
+        <app-icon name="plus" /> Add employee
+      </button>
+    }
+  </header>
+
+  <section class="card card-pad">
+    <div class="filters">
+      <label class="search">
+        <app-icon name="search" />
+        <input
+          #searchBox
+          type="search"
+          placeholder="Search by name, email or phone"
+          aria-label="Search employees"
+          [value]="search()"
+          (input)="onSearch(searchBox.value)"
+        />
+      </label>
+
+      <label class="field dept">
+        <span class="sr-only">Department</span>
+        <select #dept aria-label="Filter by department" (change)="onDepartment(dept.value)">
+          <option value="">All departments</option>
+          @for (d of departments(); track d.id) {
+            <option [value]="d.id" [selected]="d.id === departmentId()">{{ d.name }}{{ d.detail ? ' · ' + d.detail : '' }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    @if (state().error; as error) {
+      <p class="alert" role="alert"><app-icon name="alert" /> {{ error }}</p>
+    }
+
+    @if (visiblePage(); as p) {
+      <div class="table-wrap" [class.dim]="state().loading">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Department</th>
+              <th scope="col">Phone</th>
+              <th scope="col">Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (e of p.content; track e.id) {
+              <tr>
+                <td>
+                  <a class="person" [routerLink]="['/directory', e.id]">
+                    <app-avatar [name]="e.firstName + ' ' + e.lastName" [size]="34" />
+                    <span class="row-text">
+                      <strong>{{ e.firstName }} {{ e.lastName }}</strong>
+                      <small>{{ e.designationName ?? '—' }} · {{ e.email }}</small>
+                    </span>
+                  </a>
+                </td>
+                <td>{{ e.departmentName ?? '—' }}</td>
+                <td class="nowrap">{{ e.phone }}</td>
+                <td class="nowrap">{{ e.hireDate | date: 'MMM d, y' }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="empty-state">No employees match your search.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (p.totalPages > 1 || p.totalElements > 0) {
+        <nav class="pager" aria-label="Pagination">
+          <span class="muted">{{ rangeLabel() }}</span>
+          <div>
+            <button class="btn btn-sm" type="button" [disabled]="p.page === 0" (click)="goTo(p.page - 1)">
+              <app-icon name="chevron-left" /> Previous
+            </button>
+            <button class="btn btn-sm" type="button" [disabled]="p.page >= p.totalPages - 1" (click)="goTo(p.page + 1)">
+              Next <app-icon name="chevron-right" />
+            </button>
+          </div>
+        </nav>
+      }
+    } @else if (state().loading) {
+      <p class="empty-state" role="status">Loading employees…</p>
+    }
+  </section>
+</div>
+
+@if (showForm()) {
+  <app-employee-form (saved)="onCreated($event)" (closed)="showForm.set(false)" />
+}

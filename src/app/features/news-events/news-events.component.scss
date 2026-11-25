@@ -1,0 +1,90 @@
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 16px;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.card {
+  height: auto;
+}
+
+.compose {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--page);
+}
+
+.feed {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  p {
+    margin: 8px 0 0 42px;
+  }
+}
+
+.feed-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+h3 {
+  margin: 12px 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.date-tile {
+  display: inline-flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  line-height: 1.1;
+
+  strong {
+    font-size: 16px;
+  }
+
+  small {
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+}
+
+// Allow descriptions to wrap instead of truncating.
+.row-text small + small {
+  white-space: normal;
+}
+
+.past {
+  opacity: 0.65;
+}

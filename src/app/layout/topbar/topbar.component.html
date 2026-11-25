@@ -2,17 +2,35 @@
   <app-icon name="menu" />
 </button>
 
-<label class="search">
+<form class="search" role="search" (submit)="$event.preventDefault(); search(box.value)">
   <app-icon name="search" />
-  <input type="search" placeholder="Search" aria-label="Search" />
-</label>
+  <input #box type="search" placeholder="Search employees" aria-label="Search employees" />
+</form>
 
 <div class="actions">
   <button class="icon-btn" type="button" aria-label="Notifications"><app-icon name="bell" /></button>
   <button class="icon-btn" type="button" aria-label="Messages"><app-icon name="mail" /></button>
   @if (user(); as u) {
-    <a routerLink="/my-profile" aria-label="My profile">
-      <app-avatar [name]="u.firstName + ' ' + u.lastName" [size]="34" />
-    </a>
+    <div class="user-menu">
+      <button class="avatar-btn" type="button" aria-haspopup="menu" [attr.aria-expanded]="menuOpen()"
+              aria-label="Account menu" (click)="menuOpen.set(!menuOpen())">
+        <app-avatar [name]="u.firstName + ' ' + u.lastName" [size]="34" />
+      </button>
+      @if (menuOpen()) {
+        <button class="menu-scrim" type="button" tabindex="-1" aria-hidden="true" (click)="menuOpen.set(false)"></button>
+        <div class="dropdown card" role="menu" (keydown.escape)="menuOpen.set(false)">
+          <div class="who">
+            <strong>{{ u.firstName }} {{ u.lastName }}</strong>
+            <small>{{ u.email }}</small>
+            <span class="badge">{{ roleLabel(u.role) }}</span>
+          </div>
+          <a role="menuitem" routerLink="/my-profile" (click)="menuOpen.set(false)"><app-icon name="user" /> My profile</a>
+          <a role="menuitem" routerLink="/account/password" (click)="menuOpen.set(false)"><app-icon name="shield" /> Change password</a>
+          <button role="menuitem" type="button" (click)="menuOpen.set(false); logoutClicked.emit()">
+            <app-icon name="chevron-right" /> Sign out
+          </button>
+        </div>
+      }
+    </div>
   }
 </div>

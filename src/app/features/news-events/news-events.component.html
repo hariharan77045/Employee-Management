@@ -1,0 +1,144 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>News &amp; events</h1>
+      <p>Company announcements and what's coming up.</p>
+    </div>
+  </header>
+
+  @if (error(); as message) {
+    <p class="alert" role="alert"><app-icon name="alert" /> {{ message }}</p>
+  }
+
+  <div class="columns">
+    <section class="card card-pad">
+      <div class="card-head">
+        <h2>Announcements</h2>
+        @if (canManage()) {
+          <button class="btn btn-sm" type="button" (click)="showPostForm.set(!showPostForm())">
+            <app-icon [name]="showPostForm() ? 'x' : 'plus'" /> {{ showPostForm() ? 'Cancel' : 'Post' }}
+          </button>
+        }
+      </div>
+
+      @if (showPostForm() && canManage()) {
+        <form class="compose" [formGroup]="postForm" (ngSubmit)="post()" novalidate>
+          <label class="field" [class.invalid]="postForm.controls.title.touched && postForm.controls.title.invalid">
+            <span>Title</span>
+            <input formControlName="title" maxlength="150" />
+            @if (postForm.controls.title.touched && postForm.controls.title.invalid) { <small class="error">Required</small> }
+          </label>
+          <label class="field" [class.invalid]="postForm.controls.summary.touched && postForm.controls.summary.invalid">
+            <span>Message</span>
+            <textarea rows="3" formControlName="summary" maxlength="2000"></textarea>
+            @if (postForm.controls.summary.touched && postForm.controls.summary.invalid) { <small class="error">Required</small> }
+          </label>
+          <button class="btn btn-primary" type="submit" [disabled]="saving()">Post announcement</button>
+        </form>
+      }
+
+      @if (announcements(); as rows) {
+        <ul class="feed">
+          @for (a of rows; track a.id) {
+            <li>
+              <div class="feed-head">
+                <app-avatar [name]="a.author" [size]="32" />
+                <span class="row-text">
+                  <strong>{{ a.title }}</strong>
+                  <small>{{ a.author }} · {{ a.postedAt | date: 'MMM d, y, h:mm a' }}</small>
+                </span>
+                @if (canManage()) {
+                  <button class="icon-only" type="button" [attr.aria-label]="'Delete ' + a.title" (click)="deleteAnnouncement(a)">
+                    <app-icon name="trash" />
+                  </button>
+                }
+              </div>
+              <p>{{ a.summary }}</p>
+            </li>
+          } @empty {
+            <li class="empty-state">No announcements yet.</li>
+          }
+        </ul>
+      } @else if (!error()) {
+        <p class="empty-state" role="status">Loading…</p>
+      }
+    </section>
+
+    <section class="card card-pad">
+      <div class="card-head">
+        <h2>Events</h2>
+        @if (canManage()) {
+          <button class="btn btn-sm" type="button" (click)="showEventForm.set(!showEventForm())">
+            <app-icon [name]="showEventForm() ? 'x' : 'plus'" /> {{ showEventForm() ? 'Cancel' : 'Add' }}
+          </button>
+        }
+      </div>
+
+      @if (showEventForm() && canManage()) {
+        <form class="compose" [formGroup]="eventForm" (ngSubmit)="addEvent()" novalidate>
+          <label class="field" [class.invalid]="eventForm.controls.title.touched && eventForm.controls.title.invalid">
+            <span>Title</span>
+            <input formControlName="title" maxlength="150" />
+            @if (eventForm.controls.title.touched && eventForm.controls.title.invalid) { <small class="error">Required</small> }
+          </label>
+          <div class="form-grid">
+            <label class="field">
+              <span>Date</span>
+              <input type="date" formControlName="date" />
+            </label>
+            <label class="field">
+              <span>Location</span>
+              <input formControlName="location" maxlength="100" />
+            </label>
+          </div>
+          <label class="field">
+            <span>Description</span>
+            <textarea rows="2" formControlName="description" maxlength="2000"></textarea>
+          </label>
+          <button class="btn btn-primary" type="submit" [disabled]="saving()">Add event</button>
+        </form>
+      }
+
+      @if (events()) {
+        <h3>Upcoming</h3>
+        <ul class="rows">
+          @for (e of upcoming(); track e.id) {
+            <ng-container *ngTemplateOutlet="eventRow; context: { $implicit: e }" />
+          } @empty {
+            <li class="muted">Nothing scheduled.</li>
+          }
+        </ul>
+
+        @if (past().length) {
+          <h3>Past</h3>
+          <ul class="rows past">
+            @for (e of past(); track e.id) {
+              <ng-container *ngTemplateOutlet="eventRow; context: { $implicit: e }" />
+            }
+          </ul>
+        }
+      } @else if (!error()) {
+        <p class="empty-state" role="status">Loading…</p>
+      }
+    </section>
+  </div>
+</div>
+
+<ng-template #eventRow let-e>
+  <li class="row">
+    <span class="date-tile">
+      <strong>{{ e.date | date: 'd' }}</strong>
+      <small>{{ e.date | date: 'MMM' }}</small>
+    </span>
+    <span class="row-text">
+      <strong>{{ e.title }}</strong>
+      <small>{{ e.date | date: 'EEEE, MMMM d, y' }}{{ e.location ? ' · ' + e.location : '' }}</small>
+      @if (e.description) { <small>{{ e.description }}</small> }
+    </span>
+    @if (canManage()) {
+      <button class="icon-only" type="button" [attr.aria-label]="'Delete ' + e.title" (click)="deleteEvent(e)">
+        <app-icon name="trash" />
+      </button>
+    }
+  </li>
+</ng-template>

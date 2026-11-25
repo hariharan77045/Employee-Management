@@ -1,0 +1,97 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>User accounts</h1>
+      <p>
+        {{ counts().total }} accounts · {{ counts().disabled }} disabled · {{ counts().locked }} locked.
+        Changes take effect on the user's next request.
+      </p>
+    </div>
+  </header>
+
+  @if (error(); as message) {
+    <p class="alert" role="alert"><app-icon name="alert" /> {{ message }}</p>
+  }
+  @if (tempPassword(); as t) {
+    <p class="alert success" role="status">
+      <app-icon name="check" /> Temporary password for {{ t.name }}: <span class="temp">{{ t.password }}</span>
+      — share it privately; it won't be shown again.
+    </p>
+  } @else if (notice()) {
+    <p class="alert success" role="status"><app-icon name="check" /> {{ notice() }}</p>
+  }
+
+  <section class="card card-pad">
+    <div class="filters">
+      <input type="search" placeholder="Search by name or email" aria-label="Search accounts"
+             [value]="query()" (input)="query.set($any($event.target).value)" />
+      <select aria-label="Filter by role" [value]="roleFilter()" (change)="roleFilter.set($any($event.target).value)">
+        <option value="">All roles</option>
+        @for (r of roles; track r) { <option [value]="r">{{ r }}</option> }
+      </select>
+    </div>
+
+    @if (accounts()) {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">User</th>
+              <th scope="col">Role</th>
+              <th scope="col">Status</th>
+              <th scope="col">Last sign-in</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (a of visible(); track a.id) {
+              <tr>
+                <td class="user">
+                  <a class="link" [routerLink]="['/directory', a.employeeId]">{{ a.employeeName }}</a>
+                  <small>{{ a.username }}</small>
+                </td>
+                <td>
+                  <select [attr.aria-label]="'Role for ' + a.employeeName" [value]="a.role"
+                          [disabled]="isMe(a) || busyId() === a.id" (change)="setRole(a, $any($event.target).value)">
+                    @for (r of roles; track r) { <option [value]="r" [selected]="r === a.role">{{ r }}</option> }
+                  </select>
+                </td>
+                <td>
+                  @if (!a.enabled) {
+                    <span class="badge Rejected">Disabled</span>
+                  } @else if (a.locked) {
+                    <span class="badge Pending">Locked</span>
+                  } @else {
+                    <span class="badge Approved">Active</span>
+                  }
+                </td>
+                <td class="nowrap">{{ a.lastLoginAt ? (a.lastLoginAt | date: 'MMM d, y, h:mm a') : 'Never' }}</td>
+                <td>
+                  <div class="actions">
+                    @if (isMe(a)) {
+                      <span class="muted">You</span>
+                    } @else {
+                      <button class="btn btn-sm" type="button" [disabled]="busyId() === a.id" (click)="toggleEnabled(a)">
+                        {{ a.enabled ? 'Disable' : 'Enable' }}
+                      </button>
+                      @if (a.locked) {
+                        <button class="btn btn-sm" type="button" [disabled]="busyId() === a.id" (click)="unlock(a)">Unlock</button>
+                      }
+                      <button class="btn btn-sm" type="button" [disabled]="busyId() === a.id" (click)="resetPassword(a)">
+                        Reset password
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="empty-state">No accounts match.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else if (!error()) {
+      <p class="empty-state" role="status">Loading accounts…</p>
+    }
+  </section>
+</div>

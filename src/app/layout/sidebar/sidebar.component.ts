@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { CurrentUser } from '../../core/models/dashboard.models';
@@ -18,5 +18,9 @@ export class SidebarComponent {
   readonly user = input<CurrentUser>();
   readonly navigated = output<void>();
 
-  protected readonly navItems = NAV_ITEMS;
+  /** Items the signed-in role may open. */
+  protected readonly navItems = computed(() => {
+    const role = this.user()?.role;
+    return NAV_ITEMS.filter((item) => !item.roles || (role && item.roles.includes(role)));
+  });
 }

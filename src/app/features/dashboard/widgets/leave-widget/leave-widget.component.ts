@@ -30,7 +30,7 @@ import { AvatarComponent } from '../../../../shared/avatar.component';
             </span>
           </li>
         } @empty {
-          <li class="row"><small>Everyone is in today.</small></li>
+          <li class="row"><small>No approved leave in the next two weeks.</small></li>
         }
       </ul>
     </section>
