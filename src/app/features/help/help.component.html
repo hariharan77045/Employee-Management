@@ -1,0 +1,172 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>Help &amp; support</h1>
+      <p>Find answers or raise a ticket with IT, HR, payroll or facilities.</p>
+    </div>
+    <button class="btn btn-primary" type="button" (click)="setTab('mine'); showForm.set(true)">
+      <app-icon name="plus" /> Raise a ticket
+    </button>
+  </header>
+
+  <nav class="tabs" aria-label="Help sections">
+    <a href="" [class.active]="tab() === 'faq'" (click)="$event.preventDefault(); setTab('faq')">FAQs</a>
+    <a href="" [class.active]="tab() === 'mine'" (click)="$event.preventDefault(); setTab('mine')">My tickets</a>
+    @if (canWorkQueue()) {
+      <a href="" [class.active]="tab() === 'queue'" (click)="$event.preventDefault(); setTab('queue')">Support queue</a>
+    }
+  </nav>
+
+  @if (error(); as message) {
+    <p class="alert" role="alert"><app-icon name="alert" /> {{ message }}</p>
+  }
+  @if (notice(); as message) {
+    <p class="alert success" role="status"><app-icon name="check" /> {{ message }}</p>
+  }
+
+  @switch (tab()) {
+    @case ('faq') {
+      <section class="card card-pad">
+        <input class="search" type="search" placeholder="Search questions" aria-label="Search FAQs"
+               [value]="faqQuery()" (input)="faqQuery.set($any($event.target).value)" />
+        @if (faqsLoaded()) {
+          @for (g of faqGroups(); track g.category) {
+            <h3>{{ g.category }}</h3>
+            @for (f of g.items; track f.id) {
+              <details class="faq">
+                <summary>{{ f.question }}</summary>
+                <p>{{ f.answer }}</p>
+              </details>
+            }
+          } @empty {
+            <p class="empty-state">
+              No answers match. <a href="" (click)="$event.preventDefault(); setTab('mine'); showForm.set(true)">Raise a ticket</a> instead.
+            </p>
+          }
+        } @else {
+          <p class="empty-state" role="status">Loading…</p>
+        }
+      </section>
+    }
+
+    @case ('mine') {
+      @if (showForm()) {
+        <section class="card card-pad compose">
+          @if (formError(); as message) {
+            <p class="alert" role="alert"><app-icon name="alert" /> {{ message }}</p>
+          }
+          <form [formGroup]="form" (ngSubmit)="raise()" novalidate>
+            <div class="form-grid">
+              <label class="field">
+                <span>Category</span>
+                <select formControlName="category">
+                  @for (c of categories; track c) { <option [value]="c">{{ labels[c] }}</option> }
+                </select>
+              </label>
+              <label class="field">
+                <span>Priority</span>
+                <select formControlName="priority">
+                  @for (p of priorities; track p) { <option [value]="p">{{ labels[p] }}</option> }
+                </select>
+              </label>
+              <label class="field full" [class.invalid]="form.controls.subject.touched && form.controls.subject.invalid">
+                <span>Subject</span>
+                <input formControlName="subject" maxlength="150" />
+                @if (form.controls.subject.touched && form.controls.subject.invalid) { <small class="error">Required</small> }
+              </label>
+              <label class="field full" [class.invalid]="form.controls.description.touched && form.controls.description.invalid">
+                <span>What's happening?</span>
+                <textarea rows="4" formControlName="description" maxlength="4000"></textarea>
+                @if (form.controls.description.touched && form.controls.description.invalid) { <small class="error">Required</small> }
+              </label>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit" [disabled]="saving()">{{ saving() ? 'Sending…' : 'Submit ticket' }}</button>
+              <button class="btn" type="button" (click)="showForm.set(false)">Cancel</button>
+            </div>
+          </form>
+        </section>
+      }
+
+      <section class="card card-pad">
+        @if (myTickets(); as rows) {
+          <ul class="tickets">
+            @for (t of rows; track t.id) {
+              <li>
+                <div class="ticket-head">
+                  <strong>#{{ t.id }} {{ t.subject }}</strong>
+                  <span [class]="badge(t.status)">{{ labels[t.status] }}</span>
+                </div>
+                <small class="muted">
+                  {{ labels[t.category] }} · {{ labels[t.priority] }} priority · Raised {{ t.createdAt | date: 'MMM d, y' }}
+                  · Updated {{ t.updatedAt | date: 'MMM d, h:mm a' }}
+                </small>
+                <p>{{ t.description }}</p>
+                @if (t.resolution) {
+                  <p class="resolution"><strong>Response:</strong> {{ t.resolution }}</p>
+                }
+                @if (t.status !== 'CLOSED') {
+                  <button class="btn btn-sm" type="button" [disabled]="busyId() === t.id" (click)="close(t)">
+                    <app-icon name="check" /> {{ t.status === 'RESOLVED' ? 'Confirm and close' : 'Close ticket' }}
+                  </button>
+                }
+              </li>
+            } @empty {
+              <li class="empty-state">You haven't raised any tickets.</li>
+            }
+          </ul>
+        } @else {
+          <p class="empty-state" role="status">Loading…</p>
+        }
+      </section>
+    }
+
+    @case ('queue') {
+      <section class="card card-pad">
+        <div class="queue-head">
+          <label class="field inline">
+            <span>Show</span>
+            <select [value]="queueFilter()" (change)="setQueueFilter($any($event.target).value)">
+              <option value="">All tickets</option>
+              @for (s of statuses; track s) { <option [value]="s">{{ labels[s] }}</option> }
+            </select>
+          </label>
+        </div>
+        @if (queue(); as rows) {
+          <ul class="tickets">
+            @for (t of rows; track t.id) {
+              <li>
+                <div class="ticket-head">
+                  <strong>#{{ t.id }} {{ t.subject }}</strong>
+                  <span [class]="badge(t.status)">{{ labels[t.status] }}</span>
+                </div>
+                <small class="muted">
+                  {{ t.employeeName }} · {{ labels[t.category] }} · {{ labels[t.priority] }} priority · {{ t.createdAt | date: 'MMM d, y' }}
+                </small>
+                <p>{{ t.description }}</p>
+                <div class="work">
+                  <label class="field">
+                    <span>Status</span>
+                    <select [value]="drafts()[t.id]?.status" (change)="editDraft(t.id, { status: $any($event.target).value })">
+                      @for (s of statuses; track s) { <option [value]="s" [selected]="drafts()[t.id]?.status === s">{{ labels[s] }}</option> }
+                    </select>
+                  </label>
+                  <label class="field grow">
+                    <span>Response to the employee</span>
+                    <input [value]="drafts()[t.id]?.resolution ?? ''" maxlength="4000"
+                           (input)="editDraft(t.id, { resolution: $any($event.target).value })" />
+                  </label>
+                  <button class="btn btn-sm btn-primary" type="button" [disabled]="busyId() === t.id" (click)="save(t)">Save</button>
+                </div>
+              </li>
+            } @empty {
+              <li class="empty-state">No tickets here.</li>
+            }
+          </ul>
+        } @else {
+          <p class="empty-state" role="status">Loading…</p>
+        }
+      </section>
+    }
+  }
+</div>

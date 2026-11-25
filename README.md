@@ -1,5 +1,16 @@
 # EmployeeManagement
 
+Angular frontend for EmployeeHub. The API lives in
+[Employee-Management-Api](https://github.com/hariharan77045/Employee-Management-Api).
+
+## Deployment
+
+- **Vercel** (free): `vercel.json` builds the app and forwards `/api/*` to the Render backend.
+  Live URL: `https://hariharan-emp-project.vercel.app`
+- **Docker**: `Dockerfile` builds the app and serves it with nginx, which proxies `/api` to `BACKEND_URL`.
+- **Jenkins / Kubernetes**: see `Jenkinsfile`, and the full guide in the API repository's
+  [DEPLOYMENT.md](https://github.com/hariharan77045/Employee-Management-Api/blob/dev/DEPLOYMENT.md).
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.21.
 
 ## Development server

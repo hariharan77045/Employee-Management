@@ -25,6 +25,8 @@ const ICON_PATHS: Record<string, string> = {
   code: 'M8 7l-5 5 5 5M16 7l5 5-5 5',
   flask: 'M9 3h6M10 3v6L4 20h16L14 9V3',
   plus: 'M12 5v14M5 12h14',
+  download: 'M12 4v11M7 10l5 5 5-5M5 20h14',
+  undo: 'M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3',
   edit: 'M4 20h4L19 9l-4-4L4 16zM14 6l4 4',
   trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
   x: 'M6 6l12 12M18 6L6 18',
